@@ -42,10 +42,10 @@ class Emailer:
             exit(1)
 
     def send(self, to_email, subject, content_html, attach_path, attach_name=None):
-        print(to_email)
-        print(subject)
-        print(content_html)
-        return True
+        # print(to_email)
+        # print(subject)
+        # print(content_html)
+        # return True
         try:
             if not self.smtp_obj:
                 self.login()

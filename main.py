@@ -104,10 +104,10 @@ CONF_PATH = 'conf.json'
 
 if __name__ == '__main__':
     config = Configuration(CONF_PATH, DEFAULT_CONF)
-    # ym = input_month()
-    # file_path = select_file('请选择文件')
-    ym = {'year': 2020, 'month': 12}
-    file_path = 'assets/%d%02d.xlsx' % (ym['year'], ym['month'])
+    ym = input_month()
+    file_path = select_file('请选择文件')
+    # ym = {'year': 2020, 'month': 12}
+    # file_path = 'assets/%d%02d.xlsx' % (ym['year'], ym['month'])
     if 'file_sheet_name_fmt' not in config:
         config['file_sheet_name_fmt'] = '{month}'
 
