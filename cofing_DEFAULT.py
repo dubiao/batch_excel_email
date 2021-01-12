@@ -44,7 +44,7 @@ EMAIL_CONTENT = '''
 EMAIL_SUBJECT = '【工资条】{name} - {month}'
 DEFAULT_CONF = {
     'file_path': '.',
-    'file_sheet_name_fmt': '工资表{month}',
+    'file_sheet_name_fmt': '工资表{month_code}',
     'template_title_map': TEMPLATE_TITLE_MAP,
     'table_view_head': TABLE_VIEW_HEAD,
     'generate_file': {

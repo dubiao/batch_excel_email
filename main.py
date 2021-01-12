@@ -112,7 +112,7 @@ if __name__ == '__main__':
         config['file_sheet_name_fmt'] = '{month}'
 
     generator = EmailGenerator(config['generate_file'], **ym)
-    sheet_name = config['file_sheet_name_fmt'].format(month=generator.for_month_code)
+    sheet_name = config['file_sheet_name_fmt'].format(month_code=generator.for_month_code)
     reader = SalaryFileReader(file_path, sheet_name, config['template_title_map'])
     try:
         reader.load()
