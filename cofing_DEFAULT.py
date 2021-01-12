@@ -3,7 +3,7 @@ TEMPLATE_TITLE_MAP = {
     'seq': '序号',
     'name': '姓名',
     'email': '邮箱',
-    'id_number': '身份证号码',
+    # 'id_number': '身份证号码',
     'bank_account': '银行卡号',
     'salary': '基本薪资',
     'leave_money': '考勤扣款-事假',
@@ -50,7 +50,7 @@ DEFAULT_CONF = {
     'generate_file': {
         'email_content': EMAIL_CONTENT,
         'email_subject': EMAIL_SUBJECT,
-        'template_file_path': 'assets/salary_email_template2.docx',
+        'template_file_path': 'assets/salary_email_template.docx',
         'save_file_path': 'assets/files/{today}',
         'save_file_name': '{name}-{month}-工资',
         'convert_to_pdf': True,  # Only works on Windows with Office installed
