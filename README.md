@@ -3,12 +3,21 @@
 
 会持续抽象为可以基于Excel文件发送任何业务。
 
+### 运行
+
+```shell
+pip install -r requirements.txt
+python main.py
+```
+
+运行前需要在 `emailer.py` 文件中填写好邮箱的登录信息。
+
 ### 使用方法
 
 1. 运行程序会根据config_DEFAULT 生成默认的配置文件。
   可以根据需要修改 config_DEFAULT 或 conf.json
 2. 目前 main.py 是与业务偶合的。可以根据需要来修改菜单和其它逻辑
-3. 目前邮箱相关的配置直接写在代码里。主要是考虑写到配置文件会导致密码外泄
+3. 目前邮箱相关的配置直接写在代码`emailer.py`里。主要是考虑写到配置文件会导致密码外泄
 4. 文件转为PDF的功能只在Windows上已经安装Office套件时可用
 5. 每次在正式批量发送之前用菜单的前几项测试好，以防因程序bug发错而导致严重后果
 
