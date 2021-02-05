@@ -52,7 +52,15 @@ def send_email_by_indexes(config: Configuration, excel: SalaryFileReader, genera
     pass
 
 
-def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Emailer):
+def input_and_execute(excel: SalaryFileReader, generator: EmailGenerator, emailer: Emailer) :
+    seq = input_number('请输入序号: ', exit='exit')
+    if seq is None:
+        return None
+    execute_all(excel, generator, emailer, seq)
+
+
+
+def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Emailer, start_seq: int = 1):
     bye_people_need_email = True
     bye_people_has_other_email = False
     if emailer and excel.has_bye_people:
@@ -61,14 +69,14 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
             '不发送工资邮件',
             '手动输入离职人员邮箱',
         ]
-        pos = tty_menu(how_for_byes, "发现表格中有离职成员。对于他们将?")
-        if pos == 0:
+        ipos = tty_menu(how_for_byes, "发现表格中有离职成员。对于他们将?")
+        if ipos == 0:
             bye_people_need_email = True
             bye_people_has_other_email = False
-        elif pos == 1:
+        elif ipos == 1:
             bye_people_need_email = False
             bye_people_has_other_email = False
-        elif pos == 2:
+        elif ipos == 2:
             bye_people_need_email = True
             bye_people_has_other_email = True
 
@@ -76,6 +84,8 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
         for i, user_info in excel.user_value_map.items():
             # user_info = excel.user_value_map[i]
             path = generator.make_file(user_info, make=False)
+            if user_info['seq'] < start_seq:
+                continue
             if emailer and user_info['out_day']:
                 print('%s已于%s离职。' % (user_info['name'], user_info['out_day']))
                 if bye_people_need_email:
@@ -90,11 +100,11 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
 
             print('---->', user_info['email'])
             email_content = generator.make_email(user_info)
-            if emailer:
-                emailer.send(user_info['email'], email_content['subject'], email_content['content'], path)
-            else:
-                print(email_content['subject'])
-                print(email_content['content'])
+            # if emailer:
+            #     emailer.send(user_info['email'], email_content['subject'], email_content['content'], path)
+            # else:
+            #     print(email_content['subject'])
+            #     print(email_content['content'])
             p.update(i + 1)
             time.sleep(0.05)
     pass
@@ -129,13 +139,14 @@ if __name__ == '__main__':
     print(reader.table(config['table_view_head']))
 
     menus = [
-        ('刷新', lambda: print(reader.table(config['table_view_head']))),
-        ('生成一个文件', lambda: open_named_files_by_indexes(reader, generator)),
-        ('发送一封邮件', lambda: send_email_by_indexes(config, reader, generator, emailer)),
-        ('生成全部文件和邮件（不发送）', lambda: execute_all(reader, generator, None)),
-        ('重新加载文件', 'read_xlsx'),
-        ('全部发送', lambda: execute_all(reader, generator, emailer)),
-        ('退出程序', exit),
+        ('🔄 刷新', lambda: print(reader.table(config['table_view_head']))),
+        ('🔄 重新加载文件', 'read_xlsx'),
+        ('📄 生成一个文件', lambda: open_named_files_by_indexes(reader, generator)),
+        ('📧 发送一封邮件', lambda: send_email_by_indexes(config, reader, generator, emailer)),
+        ('👻 生成全部文件和邮件（不发送）', lambda: execute_all(reader, generator, None)),
+        ('📨 全部发送', lambda: execute_all(reader, generator, emailer)),
+        ('📨 发送某个序号之后', lambda: input_and_execute(reader, generator, emailer)),
+        ('🚪 退出程序', exit),
     ]
     emailer = Emailer()
     while True:

@@ -1,10 +1,9 @@
 import time
 import re
-import tkinter as tk
-from tkinter import filedialog
+from tkinter import Tk, filedialog
 
 
-def select_file(message: str):
+def select_file2(message: str):
     filepath = filedialog.askopenfilename(
         title=message,
         filetypes=[('Excel', '*.xlsx'), ('All Files', '*')],
@@ -13,12 +12,24 @@ def select_file(message: str):
     return filepath
 
 
+def select_file(message: str):
+    root = Tk()
+    root.filename = filedialog.askopenfilename(
+        title=message,
+        filetypes=[('Excel', '*.xlsx'), ('All Files', '*')],
+        initialdir='.'
+    )
+    root.withdraw()
+    root.quit()
+    return root.filename
+
+
 def input_month():
     current = time.localtime()
     print('当前日期: ', time.strftime("%Y-%m-%d", current))
     guess_year = current.tm_year if current.tm_mon > 1 else current.tm_year - 1
     guess_month = current.tm_mon - 1 if current.tm_mon > 1 else 12
-    year_month = input_number('请输入年月 或按回车确认 %d%d: ' % (guess_year, guess_month), True, 6, 202012, 222212)
+    year_month = input_number('请输入年月 或按回车确认 %04d%02d: ' % (guess_year, guess_month), True, 6, 202012, 222212)
     if not year_month:
         year_month = {
             'year': guess_year,

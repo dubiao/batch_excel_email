@@ -6,6 +6,7 @@ TEMPLATE_TITLE_MAP = {
     # 'id_number': '身份证号码',
     'bank_account': '银行卡号',
     'salary': '基本薪资',
+    'salary2': '应发工资',
     'leave_money': '考勤扣款-事假',
     'sick_money': '考勤扣款-病假',
     'no_job_money': '考勤扣款-入/离职缺勤',

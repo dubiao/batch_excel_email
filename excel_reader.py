@@ -119,6 +119,8 @@ class SalaryFileReader:
                     result[key] = row[position]
             if result['out_day']:
                 self.has_bye_people = True
+            if result['salary'] is None and result['salary2']:
+                result['salary'] = result['salary2']
             mi = 2
             result['money2'] = ''
             result['money2amount'] = ''

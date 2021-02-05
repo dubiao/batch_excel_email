@@ -58,7 +58,7 @@ class EmailGenerator:
         if params is None:
             print('error params')
             return None
-        subject = self.email_content.format(
+        subject = self.email_subject.format(
             month=self.for_month,
             today=time.strftime("%Y-%m-%d", time.localtime()),
             **params
