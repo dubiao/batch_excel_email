@@ -4,4 +4,4 @@ docxtpl==0.11.2
 comtypes==1.1.8
 progressbar2==3.53.1
 tty_menu==1.0.3
-dload==0.6
+requests~=2.25.1
