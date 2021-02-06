@@ -1,7 +1,6 @@
 
 import time
 import progressbar
-from tty_menu import tty_menu
 
 from cofing_DEFAULT import DEFAULT_CONF
 from emailer import Emailer
@@ -9,12 +8,13 @@ from util import select_file, input_number, input_email, input_month
 from attach_gen import EmailGenerator
 from configuration import Configuration
 from excel_reader import SalaryFileReader
+from menu_wrap import tty_menu
 import excel_reader
 import subprocess
 
 
 def get_user_info_by_index(excel: SalaryFileReader):
-    seq = input_number('请输入序号: ', exit='exit')
+    seq = input_number('请输入员工序号: ', exit='exit')
     if seq is None:
         return None
     else:
