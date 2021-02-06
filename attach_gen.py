@@ -11,6 +11,7 @@ except ImportError:
 class EmailGenerator:
     def __init__(self, generate_config, year, month, target_folder=None):
         if not os.path.exists(generate_config['template_file_path']):
+            print(generate_config['template_file_path'])
             raise IOError('Template file not found')
         self.template_path = generate_config['template_file_path']
         self.for_month = '%d年%02d月' % (year, month)

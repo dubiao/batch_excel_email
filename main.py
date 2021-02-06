@@ -113,6 +113,7 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
 CONF_PATH = 'conf.json'
 
 if __name__ == '__main__':
+    emailer = Emailer()
     config = Configuration(CONF_PATH, DEFAULT_CONF)
     ym = input_month()
     file_path = select_file('请选择文件')
@@ -148,7 +149,7 @@ if __name__ == '__main__':
         ('📨 发送某个序号之后', lambda: input_and_execute(reader, generator, emailer)),
         ('🚪 退出程序', exit),
     ]
-    emailer = Emailer()
+
     while True:
         pos = tty_menu([t[0] for t in menus], "请选择?")
         if pos is None:
