@@ -17,6 +17,7 @@ class SalaryFileReader:
         self.table_view = None
         self.config = config
         self.has_bye_people = False
+        self.has_noemail_people = False
         pass
 
     def set_sheet_name(self, sheet_name):
@@ -117,6 +118,8 @@ class SalaryFileReader:
                     result[key] = [value if value is not None else 0.0 for value in values]
                 else:
                     result[key] = row[position]
+            if not result['email']:
+                self.has_noemail_people = True
             if result['out_day']:
                 self.has_bye_people = True
             if result['salary'] is None and result['salary2']:

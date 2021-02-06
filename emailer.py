@@ -65,6 +65,8 @@ class Emailer:
         # print(subject)
         # print(content_html)
         # return True
+        if not to_email:
+            return False
         try:
             if not self.smtp_obj:
                 self.login()
