@@ -58,6 +58,21 @@ def input_and_execute(excel: SalaryFileReader, generator: EmailGenerator, emaile
         return None
     execute_all(excel, generator, emailer, seq)
 
+def select_salary_file():
+    file_path = select_file('请选择文件')
+    reader = SalaryFileReader(file_path, sheet_name, config['template_title_map'])
+    try:
+        reader.load()
+    except excel_reader.SheetNotFound as e:
+        # 加载容错
+        if len(e.sheet_names):
+            pos = tty_menu([t for t in e.sheet_names], "请问数据在哪个Sheet中：")
+            reader.set_sheet_name(e.sheet_names[pos])
+            reader.load()
+    except ValueError:
+        raise ValueError
+        pass
+    return reader
 
 
 def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Emailer, start_seq: int = 1):
@@ -70,14 +85,19 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
             how_for_byes = [
                 '不发送工资邮件',
                 '手动输入邮箱',
+                '回到主菜单',
             ]
-            if tty_menu(how_for_byes, "发现表格中有部分成员没有邮箱。对于他们将?") == 0:
+            ipos = tty_menu(how_for_byes, "发现表格中有部分成员没有邮箱。对于他们将?")
+            if ipos == 0:
                 no_email_need_email = False
+            elif ipos == len(how_for_byes):
+                return False
         if excel.has_bye_people:
             how_for_byes = [
                 '按表格中的邮箱发送',
                 '不发送工资邮件',
                 '手动输入离职人员邮箱',
+                '回到主菜单',
             ]
             ipos = tty_menu(how_for_byes, "发现表格中有离职成员。对于他们将?")
             if ipos == 0:
@@ -89,6 +109,8 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
             elif ipos == 2:
                 bye_people_need_email = True
                 bye_people_has_other_email = True
+            elif ipos == len(how_for_byes):
+                return False
     if start_seq < 0:
         only_bye_no_email_people = True
     with progressbar.ProgressBar(max_value=len(excel.user_value_map.items()) + 1, redirect_stdout=True, ) as p:
@@ -141,7 +163,6 @@ if __name__ == '__main__':
     emailer = Emailer()
     config = Configuration(CONF_PATH, DEFAULT_CONF)
     ym = input_month()
-    file_path = select_file('请选择文件')
     # ym = {'year': 2020, 'month': 12}
     # file_path = 'assets/%d%02d.xlsx' % (ym['year'], ym['month'])
     if 'file_sheet_name_fmt' not in config:
@@ -149,30 +170,20 @@ if __name__ == '__main__':
 
     generator = EmailGenerator(config['generate_file'], **ym)
     sheet_name = config['file_sheet_name_fmt'].format(month_code=generator.for_month_code)
-    reader = SalaryFileReader(file_path, sheet_name, config['template_title_map'])
-    try:
-        reader.load()
-    except excel_reader.SheetNotFound as e:
-        # 加载容错
-        if len(e.sheet_names):
-            pos = tty_menu([t for t in e.sheet_names], "请问数据在哪个Sheet中：")
-            reader.set_sheet_name(e.sheet_names[pos])
-            reader.load()
-    except ValueError:
-        raise ValueError
-        pass
 
+    reader = select_salary_file()
     print(reader.table(config['table_view_head']))
 
     menus = [
-        ('🔄 刷新', lambda: print(reader.table(config['table_view_head']))),
-        ('🔄 重新加载文件', 'read_xlsx'),
+        ('🔄 显示表格/刷新', lambda: print(reader.table(config['table_view_head']))),
         ('📄 生成一个文件', lambda: open_named_files_by_indexes(reader, generator)),
         ('📧 发送一封邮件', lambda: send_email_by_indexes(config, reader, generator, emailer)),
         ('👻 生成全部文件和邮件（不发送）', lambda: execute_all(reader, generator, None)),
         ('📨 全部发送', lambda: execute_all(reader, generator, emailer)),
         ('📨 发送某个序号之后', lambda: input_and_execute(reader, generator, emailer)),
         ('📨 只发送离职的和没写邮箱的', lambda: execute_all(reader, generator, emailer, -1)),
+        ('🔄 重新加载表格文件', 'read_xlsx'),
+        ('🔄 重新选择文件', 'select_xlsx'),
         ('🚪 退出程序', exit),
     ]
 
@@ -184,6 +195,9 @@ if __name__ == '__main__':
             func = menus[pos][1]
             if func == 'read_xlsx':
                 reader.load()
+                print(reader.table(config['table_view_head']))
+            elif func == 'select_xlsx':
+                reader = select_salary_file()
                 print(reader.table(config['table_view_head']))
             else:
                 if len(menus[pos]) > 2 and menus[pos][2]:
