@@ -25,6 +25,7 @@ class EmailGenerator:
         self.email_content = generate_config['email_content']
         self.email_subject = generate_config['email_subject']
         self.generate_config = generate_config
+        self.word = None
 
     def make_file(self, params, to_file=None, make=True):
         if params is None:
@@ -40,26 +41,38 @@ class EmailGenerator:
         tpl.render({'month': self.for_month})
         tpl.save(to_file)
         if self.pdf:
-            result_path = self.convert_pdf(to_file, to_pdf_file)
-            if result_path:
-                return result_path
+            if self.pdf and self.word:
+                result_path = self.convert_pdf(os.path.abspath(to_file), os.path.abspath(to_pdf_file))
+                if result_path:
+                    return result_path
         return to_file
 
     def convert_pdf(self, in_file, out_file):
         if client is None:
             return False
         format_pdf = 17
+
+        if not self.word:
+            # noinspection PyBroadException
+            try:
+                self.word = client.Dispatch('Word.Application')
+            except Exception:
+                self.pdf = False
+                pass
+        if not self.word:
+            return False
+        # noinspection PyBroadException
         try:
-            word = client.Dispatch('Word.Application')
-            doc = word.Documents.Open(in_file)
+            doc = self.word.Documents.Open(in_file)
             doc.SaveAs(out_file, FileFormat=format_pdf)
             doc.Close()
-            word.Quit()
+            # no quit
+            # self.word.Quit()
             return out_file
         except AttributeError:
             self.pdf = False
             return False
-        except any:
+        except Exception:
             return False
 
     def make_email(self, params):

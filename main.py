@@ -11,13 +11,14 @@ from excel_reader import SalaryFileReader
 from menu_wrap import tty_menu
 import excel_reader
 import sys
+import os
 try:
     from os import startfile
 except ImportError:
     import subprocess
 
     def startfile(path):
-        subprocess.call(["open", path])
+        subprocess.call(["open", os.path.abspath(path)])
 
 
 
