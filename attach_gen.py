@@ -3,7 +3,7 @@ import os
 import time
 
 try:
-    from comtypes import client
+    from win32com import client
 except ImportError:
     client = None
 
@@ -40,20 +40,27 @@ class EmailGenerator:
         tpl.render({'month': self.for_month})
         tpl.save(to_file)
         if self.pdf:
-            if self.convert_pdf(to_file, to_pdf_file):
-                return to_pdf_file
+            result_path = self.convert_pdf(to_file, to_pdf_file)
+            if result_path:
+                return result_path
         return to_file
 
-    def convert_pdf(self, infile, outfile):
-        if not client:
+    def convert_pdf(self, in_file, out_file):
+        if client is None:
             return False
         format_pdf = 17
-        word = client.CreateObject('Word.Application')
-        doc = word.Documents.Open(infile)
-        doc.SaveAs(outfile, FileFormat=format_pdf)
-        doc.Close()
-        word.Quit()
-        return True
+        try:
+            word = client.Dispatch('Word.Application')
+            doc = word.Documents.Open(in_file)
+            doc.SaveAs(out_file, FileFormat=format_pdf)
+            doc.Close()
+            word.Quit()
+            return out_file
+        except AttributeError:
+            self.pdf = False
+            return False
+        except any:
+            return False
 
     def make_email(self, params):
         if params is None:
