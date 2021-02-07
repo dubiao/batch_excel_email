@@ -10,7 +10,9 @@ from configuration import Configuration
 from excel_reader import SalaryFileReader
 from menu_wrap import tty_menu
 import excel_reader
-import subprocess
+from os import startfile
+if not startfile:
+    import subprocess
 
 
 def get_user_info_by_index(excel: SalaryFileReader):
@@ -25,8 +27,10 @@ def open_named_files_by_indexes(excel: SalaryFileReader, generator: EmailGenerat
     user_info = get_user_info_by_index(excel)
     path = generator.make_file(user_info, )
     print(path)
-    # os.startfile(path)
-    subprocess.call(["open", path])
+    if startfile:
+        startfile(path)
+    elif subprocess:
+        subprocess.call(["open", path])
     pass
 
 
@@ -53,7 +57,7 @@ def send_email_by_indexes(config: Configuration, excel: SalaryFileReader, genera
 
 
 def input_and_execute(excel: SalaryFileReader, generator: EmailGenerator, emailer: Emailer) :
-    seq = input_number('请输入序号: ', exit='exit')
+    seq = input_number('请输入开始发送的员工序号: ', empty=True, exit='exit')
     if seq is None:
         return None
     execute_all(excel, generator, emailer, seq)
@@ -118,7 +122,6 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
         for i, user_info in excel.user_value_map.items():
             p.update(i)
             # user_info = excel.user_value_map[i]
-            path = generator.make_file(user_info, make=True)
             if user_info['seq'] < start_seq:
                 continue
             if only_bye_no_email_people and (user_info['email'] and not user_info['out_day'] ):
@@ -146,6 +149,8 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
                 continue
             # p.start()
             print('---->', user_info['email'])
+
+            path = generator.make_file(user_info, make=True)
             email_content = generator.make_email(user_info)
             if emailer:
                 emailer.send(user_info['email'], email_content['subject'], email_content['content'], path)
