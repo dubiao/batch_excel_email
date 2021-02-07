@@ -10,9 +10,15 @@ from configuration import Configuration
 from excel_reader import SalaryFileReader
 from menu_wrap import tty_menu
 import excel_reader
-from os import startfile
-if not startfile:
+import sys
+try:
+    from os import startfile
+except ImportError:
     import subprocess
+
+    def startfile(path):
+        subprocess.call(["open", path])
+
 
 
 def get_user_info_by_index(excel: SalaryFileReader):
@@ -29,8 +35,8 @@ def open_named_files_by_indexes(excel: SalaryFileReader, generator: EmailGenerat
     print(path)
     if startfile:
         startfile(path)
-    elif subprocess:
-        subprocess.call(["open", path])
+    else:
+        pass
     pass
 
 
@@ -148,7 +154,7 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
                 print('%s 未发送邮件。文件保存在：%s\n' % (user_info['name'], path))
                 continue
             # p.start()
-            print('---->', user_info['email'])
+            print('---->', user_info['email'], user_info['name'])
 
             path = generator.make_file(user_info, make=True)
             email_content = generator.make_email(user_info)
@@ -191,9 +197,12 @@ if __name__ == '__main__':
         ('🔄 重新选择文件', 'select_xlsx'),
         ('🚪 退出程序', exit),
     ]
-
+    is_win = True or sys.platform == "win32"
     while True:
-        pos = tty_menu([t[0] for t in menus], "请选择?")
+        menu_array: [str] = [t[0] for t in menus]
+        if is_win:
+            menu_array = [m[2:] for m in menu_array]
+        pos = tty_menu(menu_array, "请选择?")
         if pos is None:
             exit(0)
         if pos < len(menus):
