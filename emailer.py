@@ -74,7 +74,7 @@ class Emailer:
             message['From'] = Header(self.from_email, 'utf-8')  # 发送者
             if self.reply_to_email:
                 message['Reply-to'] = Header(self.reply_to_email, 'utf-8')  #
-            send_res = self.smtp_obj.sendmail('hr@qingos.co', to_email, message.as_string())
+            send_res = self.smtp_obj.sendmail(self.from_email, to_email, message.as_string())
             return True
         except smtplib.SMTPException as err:
             print(">>>>>>>    %s 邮件发送失败" % to_email)
@@ -84,5 +84,6 @@ class Emailer:
 
 if __name__ == '__main__':
     e = Emailer()
+    print(e._config)
     e.send('bill.du@qingping.co', 's', 'c')
     pass

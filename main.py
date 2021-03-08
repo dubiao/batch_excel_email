@@ -134,6 +134,7 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
             if only_bye_no_email_people and (user_info['email'] and not user_info['out_day'] ):
                 continue
 
+            path = generator.make_file(user_info, make=True)
             if emailer and user_info['out_day']:
                 p.finish(dirty=True)
                 print('%s已于%s离职。' % (user_info['name'], user_info['out_day']))
@@ -157,7 +158,6 @@ def execute_all(excel: SalaryFileReader, generator: EmailGenerator, emailer: Ema
             # p.start()
             print('---->', user_info['email'], user_info['name'])
 
-            path = generator.make_file(user_info, make=True)
             email_content = generator.make_email(user_info)
             if emailer:
                 emailer.send(user_info['email'], email_content['subject'], email_content['content'], path)

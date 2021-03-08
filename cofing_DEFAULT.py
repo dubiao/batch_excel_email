@@ -3,7 +3,7 @@ TEMPLATE_TITLE_MAP = {
     'seq': '序号',
     'name': '姓名',
     'email': '邮箱',
-    # 'id_number': '身份证号码',
+    'id_number': '身份证号码',
     'bank_account': '银行卡号',
     'salary': '基本薪资',
     'salary2': '应发工资',
