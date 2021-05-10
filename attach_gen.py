@@ -41,6 +41,11 @@ class EmailGenerator:
         tpl.render({'month': self.for_month})
         tpl.save(to_file)
         if self.pdf:
+            if not self.word:
+                try:
+                    self.word = client.Dispatch('Word.Application')
+                except Exception:
+                    self.pdf = False
             if self.pdf and self.word:
                 result_path = self.convert_pdf(os.path.abspath(to_file), os.path.abspath(to_pdf_file))
                 if result_path:

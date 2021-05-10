@@ -35,7 +35,7 @@ def open_named_files_by_indexes(excel: SalaryFileReader, generator: EmailGenerat
     path = generator.make_file(user_info, )
     print(path)
     if startfile:
-        startfile(path)
+        startfile(os.path.abspath(path))
     else:
         pass
     pass
