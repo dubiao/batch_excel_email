@@ -6,6 +6,7 @@ from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from prettytable import PrettyTable
 from zipfile import BadZipFile
+from getpass import getpass
 
 class SalaryFileReader:
     def __init__(self, file_path, sheet_name, config) :
@@ -25,7 +26,7 @@ class SalaryFileReader:
 
     def set_sheet_name(self, sheet_name):
         self.sheet_name = sheet_name
-    def exit():
+    def exit(self):
         tempPath = self.file_path.replace(".xlsx", ".temp.xlsx")
         if os.path.exists(tempPath):
             os.remove(tempPath)
@@ -45,33 +46,31 @@ class SalaryFileReader:
         except BadZipFile as err:
             if not self.password:
                 print("文件是加密的。")
-                self.password = input("请输入密码:")
-            if self.password:
-                with open(self.file_path, 'rb') as encrypted:
-                    file = msoffcrypto.OfficeFile(encrypted)
-                    with open(tempPath, "wb") as saveto:
-                        tryPass = 0
-                        while True:
-                            try: 
-                                file.load_key(password=self.password)
-                                file.decrypt(saveto)
-                                print("读取成功")
+                self.password = getpass("请输入密码:")
+            with open(self.file_path, 'rb') as encrypted:
+                file = msoffcrypto.OfficeFile(encrypted)
+                with open(tempPath, "wb") as saveto:
+                    tryPass = 0
+                    while True:
+                        try: 
+                            file.load_key(password=self.password)
+                            file.decrypt(saveto)
+                            print("读取成功")
+                            break
+                        except msoffcrypto.exceptions.InvalidKeyError as wrong:
+                            tryPass = tryPass + 1
+                            if (tryPass > 3) :
+                                self.exit()
+                                raise IOError('密码多次输入错误。')
                                 break
-                            except msoffcrypto.exceptions.InvalidKeyError as wrong:
-                                if (tryPass > 3) :
-                                    raise IOError('密码多次输入错误。')
-                                    break
 
-                                tryPass = tryPass + 1
-                                print("密码错误！(重试 %d/3)" % tryPass)
-                                self.password = input("请输入密码:")
-
+                            print("密码错误！(重试 %d/3)" % tryPass)
+                            self.password = getpass("请输入密码:")
                 wb = load_workbook(tempPath, read_only=True, data_only=True)
-            else:
-                raise IOError('未输入密码。')
         # print(wb.sheetnames)
         if self.sheet_name not in wb:
             print('Sheet [{0}] not found in [{1}]'.format(self.sheet_name, ','.join(wb.sheetnames)))
+            self.exit()
             raise SheetNotFound(wb.sheetnames)
 
         sheet = wb[self.sheet_name]
@@ -84,6 +83,7 @@ class SalaryFileReader:
                 break
             if start_from_row == len(column_A) - 1:
                 print('表格中没有找到有效数据')
+                self.exit()
                 raise ValueError
 
         titles = sheet['A%d' % start_from_row: '%s%d' % (get_column_letter(sheet.max_column), start_from_row + 1)]

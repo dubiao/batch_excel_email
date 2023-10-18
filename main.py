@@ -198,7 +198,7 @@ if __name__ == '__main__':
         ('🔄 重新选择文件', 'select_xlsx'),
         ('🚪 退出程序', 'exit'),
     ]
-    is_win = True or sys.platform == "win32"
+    is_win = sys.platform == "win32"
     while True:
         menu_array: [str] = [t[0] for t in menus]
         if is_win:
@@ -210,7 +210,7 @@ if __name__ == '__main__':
         if pos < len(menus):
             func = menus[pos][1]
             if func == 'exit':
-
+                reader.exit()
                 exit(0)
             elif func == 'read_xlsx':
                 reader.load()
