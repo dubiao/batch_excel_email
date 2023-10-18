@@ -6,8 +6,12 @@ from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from prettytable import PrettyTable
 from zipfile import BadZipFile
-from getpass import getpass
 
+try:
+    from pwinput import pwinput as getpass
+except ImportError:
+    from getpass import getpass
+    
 class SalaryFileReader:
     def __init__(self, file_path, sheet_name, config) :
         if not os.path.exists(file_path):
