@@ -1,25 +1,30 @@
 import time
 import re
-from tkinter import Tk, filedialog
+import os
+from tkinter import Tk, Toplevel, filedialog
 
 
 def select_file2(message: str):
     filepath = filedialog.askopenfilename(
         title=message,
         filetypes=[('Excel', '*.xlsx'), ('All Files', '*')],
-        initialdir='./'
+        initialdir=os.getcwd()
     )
     return filepath
 
 
 def select_file(message: str):
     root = Tk()
+    root.withdraw()
+    top = Toplevel(root)
+    top.title(message)
+    top.grab_set()
     root.filename = filedialog.askopenfilename(
+        parent=top,
         title=message,
         filetypes=[('Excel', '*.xlsx'), ('All Files', '*')],
-        initialdir='./'
+        initialdir=os.getcwd()
     )
-    root.withdraw()
     root.quit()
     return root.filename
 
