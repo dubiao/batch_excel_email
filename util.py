@@ -7,7 +7,7 @@ def select_file2(message: str):
     filepath = filedialog.askopenfilename(
         title=message,
         filetypes=[('Excel', '*.xlsx'), ('All Files', '*')],
-        initialdir='.'
+        initialdir='./'
     )
     return filepath
 
@@ -17,7 +17,7 @@ def select_file(message: str):
     root.filename = filedialog.askopenfilename(
         title=message,
         filetypes=[('Excel', '*.xlsx'), ('All Files', '*')],
-        initialdir='.'
+        initialdir='./'
     )
     root.withdraw()
     root.quit()

@@ -196,7 +196,7 @@ if __name__ == '__main__':
         ('📨 只发送离职的和没写邮箱的', lambda: execute_all(reader, generator, emailer, -1)),
         ('🔄 重新加载表格文件', 'read_xlsx'),
         ('🔄 重新选择文件', 'select_xlsx'),
-        ('🚪 退出程序', exit),
+        ('🚪 退出程序', 'exit'),
     ]
     is_win = True or sys.platform == "win32"
     while True:
@@ -205,10 +205,14 @@ if __name__ == '__main__':
             menu_array = [m[2:] for m in menu_array]
         pos = tty_menu(menu_array, "请选择?")
         if pos is None:
+            reader.exit()
             exit(0)
         if pos < len(menus):
             func = menus[pos][1]
-            if func == 'read_xlsx':
+            if func == 'exit':
+
+                exit(0)
+            elif func == 'read_xlsx':
                 reader.load()
                 print(reader.table(config['table_view_head']))
             elif func == 'select_xlsx':
