@@ -32,6 +32,8 @@ def get_user_info_by_index(excel: SalaryFileReader):
 
 def open_named_files_by_indexes(excel: SalaryFileReader, generator: EmailGenerator):
     user_info = get_user_info_by_index(excel)
+    if not user_info:
+        print("输入的数字有误", user_info)
     path = generator.make_file(user_info, )
     print(path)
     if startfile:
@@ -80,9 +82,14 @@ def select_salary_file():
             pos = tty_menu([t for t in e.sheet_names], "请问数据在哪个Sheet中：")
             reader.set_sheet_name(e.sheet_names[pos])
             reader.load()
-    except ValueError:
-        raise ValueError
+    except BaseException as err:
+        # raise ValueError
+        print(err)
+        exit()
         pass
+    finally:
+        reader.removeTempFile()
+
     return reader
 
 
@@ -182,8 +189,9 @@ if __name__ == '__main__':
 
     generator = EmailGenerator(config['generate_file'], **ym)
     sheet_name = config['file_sheet_name_fmt'].format(month_code=generator.for_month_code)
-
+    
     reader = select_salary_file()
+
     print(reader.table(config['table_view_head']))
 
     menus = [
@@ -199,28 +207,29 @@ if __name__ == '__main__':
         ('🚪 退出程序', 'exit'),
     ]
     is_win = sys.platform == "win32"
-    while True:
-        menu_array: [str] = [t[0] for t in menus]
-        if is_win:
-            menu_array = [m[2:] for m in menu_array]
-        pos = tty_menu(menu_array, "请选择?")
-        if pos is None:
-            reader.exit()
-            exit(0)
-        if pos < len(menus):
-            func = menus[pos][1]
-            if func == 'exit':
-                reader.exit()
+    try:
+        while True:
+            menu_array: [str] = [t[0] for t in menus]
+            if is_win:
+                menu_array = [m[2:] for m in menu_array]
+            pos = tty_menu(menu_array, "请选择?")
+            if pos is None:
                 exit(0)
-            elif func == 'read_xlsx':
-                reader.load()
-                print(reader.table(config['table_view_head']))
-            elif func == 'select_xlsx':
-                reader = select_salary_file()
-                print(reader.table(config['table_view_head']))
-            else:
-                if len(menus[pos]) > 2 and menus[pos][2]:
-                    func(config, reader, generator, emailer)
+            if pos < len(menus):
+                func = menus[pos][1]
+                if func == 'exit':
+                    exit(0)
+                elif func == 'read_xlsx':
+                    reader.load()
+                    print(reader.table(config['table_view_head']))
+                elif func == 'select_xlsx':
+                    reader = select_salary_file()
+                    print(reader.table(config['table_view_head']))
                 else:
-                    func()
-
+                    if len(menus[pos]) > 2 and menus[pos][2]:
+                        func(config, reader, generator, emailer)
+                    else:
+                        func()
+    finally:
+        reader.removeTempFile()
+        print("=======finally========")

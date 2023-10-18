@@ -1,6 +1,7 @@
 import os
 import time
 import msoffcrypto 
+import tempfile
 from datetime import datetime
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
@@ -17,6 +18,7 @@ class SalaryFileReader:
         if not os.path.exists(file_path):
             raise IOError('File not found')
         self.password = None
+        self.tempfilePath = None
         self.file_path = file_path
         self.sheet_name = sheet_name
         self.titles = None
@@ -30,30 +32,32 @@ class SalaryFileReader:
 
     def set_sheet_name(self, sheet_name):
         self.sheet_name = sheet_name
-    def exit(self):
-        tempPath = self.file_path.replace(".xlsx", ".temp.xlsx")
-        if os.path.exists(tempPath):
-            os.remove(tempPath)
+    def removeTempFile(self):
+        if self.tempfilePath and os.path.exists(self.tempfilePath):
+            os.remove(self.tempfilePath)
+            # print('removeTempFile', self.tempfilePath)
+            pass
 
     def load(self):
         self.table_view = None
         self.values = None
         self.user_value_map = None
         self.titles = None
-        tempPath = self.file_path.replace(".xlsx", ".temp.xlsx")
-        if os.path.exists(tempPath):
-            os.remove(tempPath)
         if not os.path.exists(self.file_path):
             raise IOError('File not found')
         try:
             wb = load_workbook(self.file_path, read_only=True, data_only=True)
         except BadZipFile as err:
+            if not self.tempfilePath or not os.path.exists(self.tempfilePath):
+                tempfd, self.tempfilePath = tempfile.mkstemp(suffix='.xlsx')
             if not self.password:
-                print("文件是加密的。")
-                self.password = getpass("请输入密码:")
+                print("文件是加密的。", )
+                # print("解密文件=temp=", self.tempfilePath)
+                while not self.password:
+                    self.password = getpass("请输入密码:")
             with open(self.file_path, 'rb') as encrypted:
                 file = msoffcrypto.OfficeFile(encrypted)
-                with open(tempPath, "wb") as saveto:
+                with open(self.tempfilePath, "wb") as saveto:
                     tryPass = 0
                     while True:
                         try: 
@@ -62,19 +66,21 @@ class SalaryFileReader:
                             print("读取成功")
                             break
                         except msoffcrypto.exceptions.InvalidKeyError as wrong:
+                            self.password = None
                             tryPass = tryPass + 1
                             if (tryPass > 3) :
-                                self.exit()
-                                raise IOError('密码多次输入错误。')
+                                self.removeTempFile()
+                                print("多次输入错误密码。")
+                                raise wrong
                                 break
 
                             print("密码错误！(重试 %d/3)" % tryPass)
-                            self.password = getpass("请输入密码:")
-                wb = load_workbook(tempPath, read_only=True, data_only=True)
+                            while not self.password:
+                                self.password = getpass("请输入密码:")
+                wb = load_workbook(self.tempfilePath, read_only=True, data_only=True)
         # print(wb.sheetnames)
         if self.sheet_name not in wb:
             print('Sheet [{0}] not found in [{1}]'.format(self.sheet_name, ','.join(wb.sheetnames)))
-            self.exit()
             raise SheetNotFound(wb.sheetnames)
 
         sheet = wb[self.sheet_name]
@@ -87,7 +93,6 @@ class SalaryFileReader:
                 break
             if start_from_row == len(column_A) - 1:
                 print('表格中没有找到有效数据')
-                self.exit()
                 raise ValueError
 
         titles = sheet['A%d' % start_from_row: '%s%d' % (get_column_letter(sheet.max_column), start_from_row + 1)]
@@ -119,6 +124,7 @@ class SalaryFileReader:
         self.titles = list(title_strs)
         self.values = list(values)
         self.values_to_map()
+        self.removeTempFile()
 
     def get_info(self, seq):
         return self.user_value_map[seq] if seq in self.user_value_map else None
