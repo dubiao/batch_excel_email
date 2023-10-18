@@ -103,7 +103,7 @@ class SalaryFileReader:
                         title_map[key].append(index)
                     pass
             else:
-                title_map[key] = self.titles.index(title)
+                title_map[key] = self.titles.index(title) if title in self.titles else -1
         return title_map
 
     def values_to_map(self):
@@ -117,7 +117,7 @@ class SalaryFileReader:
                     values = [row[p] if p is not None else 0.0 for p in position]
                     result[key] = [value if value is not None else 0.0 for value in values]
                 else:
-                    result[key] = row[position]
+                    result[key] = row[position] if position >= 0 else ''
             if not result['email']:
                 self.has_noemail_people = True
             if result['out_day']:
